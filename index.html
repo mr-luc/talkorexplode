@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rette das Gewächshaus – Bio-Kooperationsspiel</title>
+  <style>
+    :root{
+      --bg:#eef7ec;
+      --card:#ffffff;
+      --text:#17351f;
+      --accent:#2e7d32;
+      --danger:#b71c1c;
+      --soft:#d9efd8;
+      --warn:#ffb300;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(160deg,#eef7ec,#d8ecff);
+      color:var(--text);
+      min-height:100vh;
+    }
+    header{
+      padding:18px 14px;
+      text-align:center;
+      background:rgba(255,255,255,.75);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    h1{margin:0 0 6px;font-size:1.8rem}
+    h2{margin-top:0}
+    .wrap{max-width:980px;margin:0 auto;padding:14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px}
+    .card{
+      background:var(--card);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.11);
+      border:1px solid rgba(0,0,0,.06);
+    }
+    button{
+      appearance:none;
+      border:0;
+      border-radius:14px;
+      padding:12px 14px;
+      background:var(--accent);
+      color:white;
+      font-weight:700;
+      font-size:1rem;
+      margin:6px 6px 6px 0;
+      cursor:pointer;
+    }
+    button.secondary{background:#455a64}
+    button.danger{background:var(--danger)}
+    button.light{background:#e8f5e9;color:#17351f;border:1px solid #a5d6a7}
+    .hidden{display:none!important}
+    .timer{
+      font-size:2.6rem;
+      font-weight:900;
+      text-align:center;
+      padding:10px;
+      border-radius:18px;
+      background:#0b2411;
+      color:#b9ffbd;
+      letter-spacing:.05em;
+    }
+    .status{
+      padding:10px;
+      border-radius:14px;
+      background:var(--soft);
+      margin:10px 0;
+      font-weight:700;
+    }
+    .fail{background:#ffebee;color:#b71c1c}
+    .success{background:#e8f5e9;color:#1b5e20}
+    .module{
+      border:2px solid #c8e6c9;
+      border-radius:18px;
+      padding:14px;
+      margin:14px 0;
+      background:#fbfffb;
+    }
+    .wire{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin:10px 0;
+      padding:10px;
+      border-radius:12px;
+      background:#f5f5f5;
+      border:1px solid #ddd;
+    }
+    .wireline{height:14px;border-radius:99px;flex:1;margin-right:12px}
+    .red{background:#e53935}.blue{background:#1e88e5}.yellow{background:#fdd835}.green{background:#43a047}.brown{background:#8d6e63}
+    .pill{display:inline-block;padding:6px 10px;border-radius:99px;background:#e8f5e9;margin:3px;font-weight:700}
+    .choice{
+      display:block;
+      width:100%;
+      text-align:left;
+      background:#f1f8e9;
+      color:#17351f;
+      border:1px solid #c5e1a5;
+      margin:8px 0;
+    }
+    .bigcode{
+      font-size:2rem;
+      font-weight:900;
+      text-align:center;
+      padding:12px;
+      border:2px dashed #81c784;
+      border-radius:16px;
+      background:#f1f8e9;
+    }
+    .manual{
+      line-height:1.45;
+      font-size:1.02rem;
+    }
+    .manual section{
+      border-left:6px solid #66bb6a;
+      background:#fff;
+      padding:12px;
+      margin:12px 0;
+      border-radius:12px;
+    }
+    input{
+      width:100%;
+      font-size:1.2rem;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid #aaa;
+    }
+    .small{font-size:.9rem;opacity:.82}
+    .planticon{font-size:2.3rem}
+  </style>
+</head>
+<body>
+<header>
+  <h1>🌿 Rette das Gewächshaus</h1>
+  <div>Kooperationsspiel für Biologie Klasse 5</div>
+</header>
+
+<div class="wrap">
+  <div id="start" class="card">
+    <h2>Spielidee</h2>
+    <p>Eine Person sieht das <b>Gewächshaus</b>. Die andere Person liest die <b>Forscher-Anleitung</b>. Ihr dürft euch nur durch Sprechen helfen.</p>
+    <p><b>Ziel:</b> Löst 3 Bio-Module, bevor die Zeit abläuft.</p>
+    <button onclick="showGreenhouse()">Ich habe iPad/iPhone: Gewächshaus öffnen</button>
+    <button class="secondary" onclick="showManual()">Ich habe das andere Gerät: Forscher-Anleitung öffnen</button>
+  </div>
+
+  <div id="greenhouse" class="hidden">
+    <div class="grid">
+      <div class="card">
+        <h2>Gewächshaus-Konsole</h2>
+        <div id="timer" class="timer">05:00</div>
+        <div id="message" class="status">Sprich mit dem Forscherteam. Beschreibe genau, was du siehst.</div>
+        <button onclick="startGame()">Start</button>
+        <button class="secondary" onclick="resetGame()">Neu starten</button>
+      </div>
+      <div class="card">
+        <h2>Gewächshaus-Daten</h2>
+        <p>Seriennummer: <b id="serial">PFL-258</b></p>
+        <p>Standort: <span class="pill">hell</span> <span class="pill">warm</span> <span class="pill">feucht</span></p>
+        <p class="small">Diese Angaben können für die Regeln wichtig sein.</p>
+      </div>
+    </div>
+
+    <div class="module card">
+      <h2>Modul 1: Bewässerungs-Schläuche</h2>
+      <p>Ein Schlauch muss geschlossen werden. Beschreibe die Farben und die Seriennummer.</p>
+      <div id="wires"></div>
+    </div>
+
+    <div class="module card">
+      <h2>Modul 2: Tiergruppe bestimmen</h2>
+      <p>Welches Tier passt zu den Merkmalen?</p>
+      <div class="bigcode">🦎</div>
+      <p>Merkmale: trockene Haut mit Schuppen, legt Eier an Land, wechselwarm.</p>
+      <button class="choice" onclick="answerAnimal('Amphibie')">Amphibie</button>
+      <button class="choice" onclick="answerAnimal('Reptil')">Reptil</button>
+      <button class="choice" onclick="answerAnimal('Säugetier')">Säugetier</button>
+      <button class="choice" onclick="answerAnimal('Vogel')">Vogel</button>
+    </div>
+
+    <div class="module card">
+      <h2>Modul 3: Pflanzen-Code</h2>
+      <p>Ordne die Fotosynthese-Stoffe richtig und gib den dreistelligen Code ein.</p>
+      <p><span class="pill">Wasser</span> <span class="pill">Kohlenstoffdioxid</span> <span class="pill">Licht</span> <span class="pill">Zucker</span> <span class="pill">Sauerstoff</span></p>
+      <input id="plantCode" placeholder="Code eingeben">
+      <button onclick="checkPlantCode()">Code prüfen</button>
+    </div>
+  </div>
+
+  <div id="manual" class="hidden card manual">
+    <h2>📘 Forscher-Anleitung</h2>
+    <p>Du darfst das Gewächshaus-Display nicht sehen. Stelle Fragen und gib klare Anweisungen.</p>
+
+    <section>
+      <h3>Modul 1: Bewässerungs-Schläuche</h3>
+      <p>Frage zuerst nach der Seriennummer.</p>
+      <p><b>Regeln:</b></p>
+      <ol>
+        <li>Endet die Seriennummer auf eine gerade Zahl, schließe den <b>grünen</b> Schlauch.</li>
+        <li>Endet sie auf eine ungerade Zahl, schließe den <b>blauen</b> Schlauch.</li>
+        <li>Gibt es keinen passenden Schlauch, schließe den <b>gelben</b> Schlauch.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h3>Modul 2: Tiergruppe bestimmen</h3>
+      <p>Frage nach den Merkmalen des Tieres.</p>
+      <ul>
+        <li><b>Amphibien:</b> feuchte Haut, leben oft im Wasser und an Land.</li>
+        <li><b>Reptilien:</b> trockene Haut mit Schuppen, legen Eier an Land, wechselwarm.</li>
+        <li><b>Säugetiere:</b> Fell/Haare, lebende Junge, säugen ihre Jungen.</li>
+        <li><b>Vögel:</b> Federn, Schnabel, legen Eier.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>Modul 3: Pflanzen-Code</h3>
+      <p>Fotosynthese: Die Pflanze braucht <b>Wasser</b>, <b>Kohlenstoffdioxid</b> und <b>Licht</b>.</p>
+      <p>Dabei entstehen <b>Zucker</b> und <b>Sauerstoff</b>.</p>
+      <p><b>Code-Regel:</b></p>
+      <ol>
+        <li>Wasser = 1</li>
+        <li>Kohlenstoffdioxid = 2</li>
+        <li>Licht = 3</li>
+        <li>Zucker = 4</li>
+        <li>Sauerstoff = 5</li>
+      </ol>
+      <p>Der Code besteht aus den drei Dingen, die die Pflanze <b>braucht</b>: <b>123</b>.</p>
+    </section>
+
+    <section>
+      <h3>Nachbesprechung</h3>
+      <p>Was war schwer? Welche Begriffe mussten genau beschrieben werden? Welche Regel war ein Algorithmus?</p>
+    </section>
+
+    <button class="secondary" onclick="showStart()">Zurück</button>
+  </div>
+</div>
+
+<script>
+let timeLeft = 300;
+let interval = null;
+let solved = {wire:false, animal:false, plant:false};
+
+const wireColors = ["rot","blau","gelb","grün"];
+const colorClass = {"rot":"red","blau":"blue","gelb":"yellow","grün":"green"};
+
+function showStart(){
+  document.getElementById("start").classList.remove("hidden");
+  document.getElementById("greenhouse").classList.add("hidden");
+  document.getElementById("manual").classList.add("hidden");
+}
+function showGreenhouse(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("greenhouse").classList.remove("hidden");
+  document.getElementById("manual").classList.add("hidden");
+}
+function showManual(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("greenhouse").classList.add("hidden");
+  document.getElementById("manual").classList.remove("hidden");
+}
+function startGame(){
+  if(interval) return;
+  interval = setInterval(()=>{
+    timeLeft--;
+    renderTimer();
+    if(timeLeft <= 0){
+      clearInterval(interval);
+      interval = null;
+      setMessage("Die Zeit ist abgelaufen. Besprecht, wo die Kommunikation schwierig war.", "fail");
+    }
+  },1000);
+}
+function resetGame(){
+  timeLeft = 300;
+  solved = {wire:false, animal:false, plant:false};
+  clearInterval(interval);
+  interval = null;
+  document.getElementById("plantCode").value = "";
+  renderTimer();
+  renderWires();
+  setMessage("Sprich mit dem Forscherteam. Beschreibe genau, was du siehst.", "");
+}
+function renderTimer(){
+  let m = Math.floor(timeLeft/60).toString().padStart(2,"0");
+  let s = (timeLeft%60).toString().padStart(2,"0");
+  document.getElementById("timer").textContent = `${m}:${s}`;
+}
+function renderWires(){
+  const box = document.getElementById("wires");
+  box.innerHTML = "";
+  wireColors.forEach(c=>{
+    const row = document.createElement("div");
+    row.className = "wire";
+    row.innerHTML = `<div class="wireline ${colorClass[c]}"></div><button onclick="cutWire('${c}')">Schließen</button>`;
+    box.appendChild(row);
+  });
+}
+function setMessage(text, type){
+  const msg = document.getElementById("message");
+  msg.textContent = text;
+  msg.className = "status " + (type || "");
+}
+function cutWire(color){
+  if(solved.wire){ setMessage("Modul 1 ist schon gelöst.", "success"); return; }
+  if(color === "grün"){
+    solved.wire = true;
+    setMessage("Modul 1 gelöst: Der richtige Schlauch ist geschlossen.", "success");
+    checkWin();
+  } else {
+    timeLeft = Math.max(0, timeLeft - 30);
+    renderTimer();
+    setMessage("Falscher Schlauch! 30 Sekunden Abzug. Beschreibt genauer.", "fail");
+  }
+}
+function answerAnimal(ans){
+  if(solved.animal){ setMessage("Modul 2 ist schon gelöst.", "success"); return; }
+  if(ans === "Reptil"){
+    solved.animal = true;
+    setMessage("Modul 2 gelöst: Das Tier ist ein Reptil.", "success");
+    checkWin();
+  } else {
+    timeLeft = Math.max(0, timeLeft - 20);
+    renderTimer();
+    setMessage("Falsche Tiergruppe! 20 Sekunden Abzug.", "fail");
+  }
+}
+function checkPlantCode(){
+  if(solved.plant){ setMessage("Modul 3 ist schon gelöst.", "success"); return; }
+  const val = document.getElementById("plantCode").value.trim();
+  if(val === "123"){
+    solved.plant = true;
+    setMessage("Modul 3 gelöst: Pflanzen brauchen Wasser, Kohlenstoffdioxid und Licht.", "success");
+    checkWin();
+  } else {
+    timeLeft = Math.max(0, timeLeft - 20);
+    renderTimer();
+    setMessage("Falscher Pflanzen-Code! 20 Sekunden Abzug.", "fail");
+  }
+}
+function checkWin(){
+  if(solved.wire && solved.animal && solved.plant){
+    clearInterval(interval);
+    interval = null;
+    setMessage("Geschafft! Das Gewächshaus ist gerettet. Jetzt folgt die Reflexion: Welche Anweisungen waren eindeutig?", "success");
+  }
+}
+renderTimer();
+renderWires();
+</script>
+</body>
+</html>
