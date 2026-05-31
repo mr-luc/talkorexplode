@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Talk or Explode – Multiplayer Test</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(145deg,#eaf7ec,#d8ecff);color:#183820}header{text-align:center;padding:14px;background:#ffffffdd;border-bottom:1px solid #ccc}h1{margin:0;font-size:1.45rem}.wrap{max-width:900px;margin:auto;padding:12px}.card{background:white;border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 22px #0002}.hidden{display:none!important}button{border:0;border-radius:13px;padding:12px 14px;margin:5px;background:#2e7d32;color:white;font-weight:800;font-size:1rem}button.secondary{background:#455a64}.status{font-weight:800;background:#e8f5e9;border-radius:12px;padding:10px;margin:8px 0}.warn{background:#fff8e1;color:#765000}.success{background:#e8f5e9;color:#1b5e20}.fail{background:#ffebee;color:#b71c1c}.room{font-size:1.8rem;font-weight:900;text-align:center;background:#eef7ec;border-radius:12px;padding:10px}.qr{text-align:center;border:2px dashed #81c784;border-radius:16px;padding:12px}.qr canvas,.qr img{margin:auto}.big{font-size:2.2rem;font-weight:900;text-align:center}.pill{display:inline-block;border-radius:99px;background:#e8f5e9;padding:7px 11px;margin:4px;font-weight:800}input{width:100%;font-size:1.2rem;padding:12px;border-radius:12px;border:1px solid #aaa}.log{font-family:ui-monospace,Menlo,monospace;background:#102817;color:#b9ffbd;border-radius:12px;padding:10px;white-space:pre-wrap;min-height:90px}
+</style>
+</head>
+<body>
+<header><h1>🌿 Talk or Explode – Multiplayer Test</h1><div>Getrennte Testseite, damit index.html stabil bleibt.</div></header>
+<div class="wrap">
+  <div id="start" class="card">
+    <h2>Rolle wählen</h2>
+    <button onclick="host()">iPad: Host starten</button>
+    <button class="secondary" onclick="showJoin()">iPhone: Raumcode eingeben</button>
+    <div id="joinBox" class="hidden"><input id="joinCode" placeholder="Raumcode, z. B. BIO1234"><button onclick="join()">Beitreten</button></div>
+    <div id="status" class="status">Bereit.</div>
+  </div>
+
+  <div id="host" class="card hidden">
+    <h2>Host</h2>
+    <div id="room" class="room"></div>
+    <div class="qr"><b>Mit iPhone scannen</b><div id="qr"></div><div id="url" style="word-break:break-all;font-size:.8rem"></div></div>
+    <div class="big">⏱️ <span id="time">08:00</span></div>
+    <p><span class="pill">Gelöst: <span id="solved">0</span>/5</span><span class="pill">Fehler: <span id="mistakes">0</span></span></p>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="solveOne()">+ gelöst</button>
+    <button onclick="mistake()">Fehler</button>
+    <button class="secondary" onclick="sendState()">Status senden</button>
+  </div>
+
+  <div id="manual" class="card hidden">
+    <h2>Forscher-Ansicht</h2>
+    <div id="manualStatus" class="status warn">Warte auf Verbindung ...</div>
+    <div class="big">⏱️ <span id="rTime">08:00</span></div>
+    <p><span class="pill">Gelöst: <span id="rSolved">0</span>/5</span><span class="pill">Fehler: <span id="rMistakes">0</span></span></p>
+    <h3>Du siehst absichtlich nicht das Gewächshaus.</h3>
+    <p>Frage nach Sensorwerten, Beet, Ventil, Pumpe, Dachfenster, Heizung, Schattung, Gelbtafel und Nebeldüse.</p>
+    <button onclick="retry()">Erneut verbinden</button>
+  </div>
+
+  <div class="card"><h2>Log</h2><div id="log" class="log"></div></div>
+</div>
+<script type="module">
+import { joinRoom } from 'https://esm.sh/trystero/torrent';
+let room=null,sendStateAction=null,sendPing=null,lastCode='',role='none',time=480,timer=null,solved=0,mistakes=0;
+const config={appId:'talkorexplode-multiplayer-test-v1'};
+const $=id=>document.getElementById(id);
+function log(t){$('log').textContent=new Date().toLocaleTimeString()+': '+t+'\n'+$('log').textContent}
+function fmt(t){return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+function hideAll(){['start','host','manual'].forEach(id=>$(id).classList.add('hidden'))}
+function code(){return 'BIO'+Math.floor(1000+Math.random()*9000)}
+function makeUrl(c){const u=new URL(location.href);u.searchParams.set('room',c);return u.toString()}
+function connect(c){lastCode=c; if(room&&room.leave)room.leave(); room=joinRoom(config,c); const s=room.makeAction('state'); sendStateAction=s[0]; s[1](data=>receive(data)); const p=room.makeAction('ping'); sendPing=p[0]; p[1](()=>{ if(role==='host') sendState(); }); room.onPeerJoin(()=>{log('Teilnehmer verbunden'); if(role==='host')sendState(); if(role==='manual')setManual('Live verbunden mit Raum '+lastCode,'success')}); room.onPeerLeave(()=>{log('Teilnehmer getrennt'); if(role==='manual')setManual('Verbindung getrennt. Erneut verbinden drücken.','warn')});}
+function host(){role='host';const c=code();hideAll();$('host').classList.remove('hidden');$('room').textContent='Raumcode: '+c;const url=makeUrl(c);$('url').textContent=url;$('qr').innerHTML='';new QRCode($('qr'),{text:url,width:190,height:190});connect(c);log('Host gestartet: '+c)}
+function showJoin(){$('joinBox').classList.remove('hidden')}
+function join(){const c=$('joinCode').value.trim().toUpperCase(); if(c)openManual(c)}
+function openManual(c){role='manual';hideAll();$('manual').classList.remove('hidden');setManual('Warte auf Verbindung mit '+c+' ...','warn');connect(c);setTimeout(()=>{try{sendPing({hello:true})}catch(e){}},500);log('Forscher wartet auf '+c)}
+function retry(){if(lastCode)openManual(lastCode)}
+function setManual(t,cls){$('manualStatus').textContent=t;$('manualStatus').className='status '+(cls||'')}
+function startTimer(){if(timer)return;timer=setInterval(()=>{time--; if(time<0)time=0; updateHost(); sendState();},1000);sendState();log('Timer gestartet')}
+function solveOne(){solved=Math.min(5,solved+1);updateHost();sendState()}
+function mistake(){mistakes++;updateHost();sendState()}
+function updateHost(){$('time').textContent=fmt(time);$('solved').textContent=solved;$('mistakes').textContent=mistakes}
+function sendState(){if(sendStateAction)sendStateAction({time,solved,mistakes})}
+function receive(d){$('rTime').textContent=fmt(d.time);$('rSolved').textContent=d.solved;$('rMistakes').textContent=d.mistakes;setManual('Live verbunden mit Raum '+lastCode,'success');log('Status empfangen')}
+Object.assign(window,{host,showJoin,join,retry,startTimer,solveOne,mistake,sendState});
+const roomParam=new URLSearchParams(location.search).get('room'); if(roomParam)openManual(roomParam.toUpperCase());
+</script>
+</body>
+</html>
