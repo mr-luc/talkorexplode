@@ -25,10 +25,13 @@ Optional lokal entwickeln/deployen (Node.js erforderlich):
    npm run deploy   (manuelles Deploy via npx wrangler deploy)
 
 Spielidee:
-Löst gemeinsam 3 Bio-Module, bevor die Zeit (5:00) abläuft. Eine Person bedient
-am iPad die Konsole und SIEHT die konkreten Aufgaben; die andere liest am iPhone
-die Forscher-Anleitung mit den REGELN. Geholfen wird nur durch Sprechen. Eine
-falsche Antwort kostet Zeit (Modul 1: -30 s, Module 2 und 3: -20 s).
+Schafft 3 Level mit immer mehr Bio-Fragen: Level 1 = 5 Fragen, Level 2 = 8,
+Level 3 = 12. Pro Level läuft ein eigener Timer (40 s pro Frage); nach einem
+geschafften Level geht es per Knopf weiter. Eine Person bedient am iPad die
+Konsole und SIEHT die konkrete Aufgabe; die andere liest am iPhone die
+Forscher-Anleitung mit den REGELN. Geholfen wird nur durch Sprechen. Eine
+falsche Antwort kostet 20 s. Die Fragen mischen 3 Typen (Schläuche, Tiergruppe,
+Fotosynthese) und werden je Runde zufällig erzeugt.
 
 Spielablauf (beide Geräte öffnen die Cloudflare-Adresse, brauchen Internet):
 1. iPad wählt „Gewächshaus hosten“ und zeigt einen Raumcode + QR-Code.
