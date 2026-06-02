@@ -1,9 +1,0 @@
-# Cloudflare-Worker, der NUR die statische Seite ausliefert (keine Server-Logik).
-# Das Live-Sync läuft getrennt über PartyKit (siehe partykit.json + README).
-# Diese Datei sorgt dafür, dass der per Git verbundene Cloudflare-Build
-# deterministisch durchläuft (sonst scheitert "wrangler deploy" mangels Konfig).
-name = "talkorexplode"
-compatibility_date = "2025-06-01"
-
-[assets]
-directory = "./"

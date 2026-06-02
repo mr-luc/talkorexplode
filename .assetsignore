@@ -3,7 +3,7 @@ party
 package.json
 package-lock.json
 partykit.json
-wrangler.toml
+wrangler.jsonc
 .assetsignore
 .gitignore
 README.txt
