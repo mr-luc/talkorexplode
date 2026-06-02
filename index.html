@@ -6,37 +6,14 @@
 <title>Talk or Explode – Bio Klasse 5</title>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:linear-gradient(145deg,#eaf7ec,#d8ecff);color:#183820}
-header{text-align:center;padding:14px;background:#ffffffdd;border-bottom:1px solid #ccc}
-h1{margin:0;font-size:1.6rem}h2{margin-top:0}
-.wrap{max-width:1000px;margin:auto;padding:10px}
-.card{background:#fff;border-radius:18px;padding:16px;margin:10px 0;box-shadow:0 8px 22px #0002}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
-button{border:0;border-radius:13px;padding:12px 14px;margin:5px 5px 5px 0;background:#2e7d32;color:#fff;font-weight:800;font-size:1rem;cursor:pointer}
-button.secondary{background:#455a64}button.blue{background:#1565c0}button:disabled{opacity:.5;cursor:default}
-.hidden{display:none!important}
-.status{font-weight:800;background:#e8f5e9;border-radius:12px;padding:10px;margin:8px 0}
-.fail{background:#ffebee;color:#b71c1c}.success{background:#e8f5e9;color:#1b5e20}.warn{background:#fff8e1;color:#765000}
-.timer{font-size:2.25rem;font-weight:900;text-align:center;background:#102817;color:#b9ffbd;border-radius:16px;padding:9px}
-.room{font-size:1.4rem;font-weight:900;text-align:center;background:#eef7ec;border-radius:12px;padding:8px}
-.qrbox{text-align:center;border:2px dashed #81c784;border-radius:16px;padding:10px}
-.qrbox canvas,.qrbox img{margin:auto}
-.pill{display:inline-block;border-radius:99px;background:#e8f5e9;padding:5px 9px;margin:3px;font-weight:800}
-.score{font-weight:900;margin:4px 0}
-.bar{height:14px;border-radius:99px;background:#e0efe0;overflow:hidden;margin:6px 0}
-.bar>i{display:block;height:100%;background:#43a047;width:0;transition:.3s}
-.question{border:2px solid #c8e6c9;border-radius:16px;padding:16px;margin:10px 0;background:#fbfffb}
-.serial{font-size:1.5rem;font-weight:900;background:#eef7ec;border-radius:12px;padding:8px;text-align:center;letter-spacing:.04em}
-.wire{display:flex;align-items:center;gap:12px;margin:8px 0;padding:8px;border-radius:12px;background:#f5f5f5;border:1px solid #ddd}
-.wireline{height:16px;border-radius:99px;flex:1}
-.red{background:#e53935}.blue{background:#1e88e5}.yellow{background:#fdd835}.green{background:#43a047}
-.bigicon{font-size:3.4rem;text-align:center}
-.choice{display:block;width:100%;text-align:left;background:#f1f8e9;color:#17351f;border:1px solid #c5e1a5;margin:6px 0}
-input{width:100%;font-size:1.2rem;padding:12px;border-radius:12px;border:1px solid #aaa;margin:6px 0}
-.manual section{border-left:6px solid #66bb6a;background:#fff;border-radius:12px;padding:10px;margin:10px 0;line-height:1.45}
-.manual section.active{border-left-color:#1565c0;background:#e9f2ff;box-shadow:0 0 0 2px #90caf9}
-.small{font-size:.85rem;color:#557}
+:root{--bg:#071812;--bg2:#0d2a1c;--card:rgba(255,255,255,.94);--glass:rgba(255,255,255,.12);--ink:#102018;--muted:#64746b;--green:#35a852;--green2:#70d96b;--blue:#2368d8;--red:#d93b3b;--yellow:#f8bd24;--line:#dce8df;--shadow:0 18px 45px rgba(2,18,10,.22);--radius:22px}
+*{box-sizing:border-box}html{min-height:100%;background:var(--bg)}body{margin:0;min-height:100vh;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 0%,#2b9d57 0,#15472e 30%,#071812 70%),linear-gradient(145deg,#0b2418,#071812);}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:32px 32px;mask-image:linear-gradient(to bottom,black,transparent 80%)}
+header{position:sticky;top:0;z-index:5;text-align:center;padding:calc(14px + env(safe-area-inset-top)) 14px 14px;background:rgba(7,24,18,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.14);color:#fff}h1{margin:0;font-size:clamp(1.55rem,4vw,2.4rem);letter-spacing:-.04em}header div{margin-top:4px;color:#caead4;font-weight:650}.wrap{max-width:1120px;margin:auto;padding:14px}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.7);border-radius:var(--radius);padding:18px;margin:14px 0;box-shadow:var(--shadow);position:relative;overflow:hidden}.card:before{content:"";position:absolute;inset:0 0 auto 0;height:5px;background:linear-gradient(90deg,var(--green),#a5df55,#49a8ff);opacity:.9}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}h2{margin:0 0 10px;font-size:1.45rem;letter-spacing:-.025em}h3{margin:.2rem 0 .45rem}p{line-height:1.45}b{color:#0a3d20}
+button{border:0;border-radius:16px;padding:13px 16px;margin:6px 6px 6px 0;background:linear-gradient(180deg,#3fbd5e,#249a43);color:#fff;font-weight:900;font-size:1rem;cursor:pointer;box-shadow:0 8px 20px rgba(46,125,50,.28);transition:transform .12s ease,box-shadow .12s ease,filter .12s ease}button:hover{transform:translateY(-1px);filter:saturate(1.05)}button:active{transform:translateY(1px);box-shadow:0 4px 10px rgba(46,125,50,.25)}button.secondary{background:linear-gradient(180deg,#62717a,#405058);box-shadow:0 8px 18px rgba(30,50,60,.22)}button.blue{background:linear-gradient(180deg,#3579ee,#1859c7);box-shadow:0 8px 18px rgba(21,101,192,.28)}button:disabled{opacity:.45;cursor:default;transform:none;box-shadow:none}.hidden{display:none!important}
+.status{font-weight:850;background:#edf9ee;border:1px solid #cceccc;border-radius:16px;padding:12px;margin:10px 0;color:#15391f}.fail{background:#fff0f0;color:#a21616;border-color:#ffc5c5}.success{background:#ecfbef;color:#145c25;border-color:#bdecc5}.warn{background:#fff8df;color:#765000;border-color:#f4dea0}.timer{font-size:clamp(2.2rem,9vw,4rem);font-weight:950;text-align:center;background:linear-gradient(180deg,#071812,#0e2d1c);color:#baffbf;border-radius:22px;padding:14px;letter-spacing:.04em;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 18px 35px rgba(0,0,0,.25)}.room{font-size:1.55rem;font-weight:950;text-align:center;background:linear-gradient(180deg,#eefbf0,#dff5df);border:1px solid #bfe9c2;border-radius:16px;padding:12px;letter-spacing:.04em}.qrbox{text-align:center;border:2px dashed #6fcf7a;border-radius:20px;padding:14px;background:#f7fff7}.qrbox canvas,.qrbox img{margin:8px auto}.pill{display:inline-block;border-radius:999px;background:#e9f8ec;border:1px solid #cdecd1;padding:7px 11px;margin:4px;font-weight:850;color:#123c20}.score{font-weight:950;margin:5px 0;font-size:1.05rem}.bar{height:16px;border-radius:999px;background:#dfece2;overflow:hidden;margin:9px 0;box-shadow:inset 0 2px 6px rgba(0,0,0,.08)}.bar>i{display:block;height:100%;background:linear-gradient(90deg,#35a852,#a6df45);width:0;transition:.35s ease;border-radius:inherit}.question{border:1px solid rgba(255,255,255,.85);border-radius:26px;padding:22px;margin:16px 0;background:linear-gradient(180deg,#ffffff,#f6fff8);min-height:260px}.question h2{font-size:clamp(1.6rem,4vw,2.4rem)}.serial{font-size:clamp(1.6rem,5vw,2.4rem);font-weight:950;background:#0f281a;color:#c6ffcb;border-radius:18px;padding:16px;text-align:center;letter-spacing:.08em;margin:14px 0;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}.wire{display:flex;align-items:center;gap:14px;margin:10px 0;padding:12px;border-radius:16px;background:#f7faf8;border:1px solid #dfe7e1}.wireline{height:20px;border-radius:999px;flex:1;box-shadow:inset 0 -3px 6px rgba(0,0,0,.18)}.red{background:#e53935}.blue{background:#1e88e5}.yellow{background:#fdd835}.green{background:#43a047}.bigicon{font-size:clamp(4rem,16vw,7rem);text-align:center;filter:drop-shadow(0 12px 20px rgba(0,0,0,.16))}.choice{display:block;width:100%;text-align:left;background:#f4fbf4;color:#12351f;border:1px solid #cce6cf;margin:8px 0;box-shadow:none}.choice:hover{background:#e9f8ec}input{width:100%;font-size:1.25rem;padding:14px;border-radius:16px;border:1px solid #b8c8bd;margin:8px 0;background:#fbfffc}.manual section{border-left:7px solid #66bb6a;background:#fff;border-radius:16px;padding:14px;margin:14px 0;line-height:1.48;box-shadow:0 8px 22px rgba(0,0,0,.07)}.manual section.active{border-left-color:#1565c0;background:#edf5ff;box-shadow:0 0 0 2px #90caf9,0 12px 28px rgba(21,101,192,.18)}.small{font-size:.9rem;color:var(--muted)}
+@media(max-width:720px){.wrap{padding:10px}.card{padding:15px;border-radius:20px}.grid{grid-template-columns:1fr}.question{padding:17px}.wire{display:block}.wireline{height:22px;margin:4px 0 10px}button{width:100%;margin:6px 0}.qrbox{overflow:hidden}}
 </style>
 </head>
 <body>
