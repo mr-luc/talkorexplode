@@ -90,21 +90,26 @@ input{width:100%;font-size:1.2rem;padding:12px;border-radius:12px;border:1px sol
       <h3>Modul: Tiergruppe bestimmen</h3>
       <p>Frag nach den <b>Merkmalen</b> des Tieres und ordne es zu:</p>
       <ul>
-        <li><b>Amphibien:</b> feuchte, glatte Haut, leben im Wasser und an Land, wechselwarm.</li>
+        <li><b>Säugetiere:</b> Fell/Haare, lebende Junge, säugen ihre Jungen (auch Fledermaus, Delfin, Wal!).</li>
+        <li><b>Vögel:</b> Federn, Schnabel, legen Eier (auch Pinguin, der nicht fliegt!).</li>
         <li><b>Reptilien:</b> trockene Haut mit Schuppen, legen Eier an Land, wechselwarm.</li>
-        <li><b>Säugetiere:</b> Fell/Haare, lebende Junge, säugen ihre Jungen.</li>
-        <li><b>Vögel:</b> Federn, Schnabel, legen Eier.</li>
+        <li><b>Amphibien:</b> feuchte, glatte Haut, leben im Wasser und an Land, wechselwarm.</li>
+        <li><b>Fische:</b> leben im Wasser, atmen mit Kiemen, Schuppen und Flossen, legen Laich, wechselwarm.</li>
       </ul>
+      <p class="small">Tipp: Fell + säugen = immer Säugetier, auch wenn es fliegt oder schwimmt. Kiemen = Fisch, Lunge im Wasser = Säugetier.</p>
     </section>
 
     <section id="secPlant">
       <h3>Modul: Pflanzen-Code (Fotosynthese)</h3>
-      <p>Die Pflanze <b>braucht</b>: Wasser, Kohlenstoffdioxid und Licht. Dabei <b>entstehen</b>: Zucker und Sauerstoff.</p>
-      <p><b>Nummerierung:</b> Wasser = 1, Kohlenstoffdioxid = 2, Licht = 3, Zucker = 4, Sauerstoff = 5.</p>
+      <p><b>Nummerierung:</b></p>
       <ul>
-        <li>Frage „Was die Pflanze <b>braucht</b>" → Code <b>123</b>.</li>
-        <li>Frage „Was die Pflanze <b>herstellt</b>" → Code <b>45</b>.</li>
+        <li><b>1 = Wasser</b> – nimmt die Pflanze über die <b>Wurzeln aus dem Boden</b> auf (braucht).</li>
+        <li><b>2 = Kohlenstoffdioxid</b> – nimmt sie als <b>Gas aus der Luft</b> auf (braucht).</li>
+        <li><b>3 = Licht</b> – liefert die <b>Energie</b> (braucht).</li>
+        <li><b>4 = Zucker</b> – der <b>Energiespeicher/Nährstoff</b>, den die Pflanze herstellt.</li>
+        <li><b>5 = Sauerstoff</b> – das Gas, das die Pflanze <b>an die Luft abgibt</b> (herstellt).</li>
       </ul>
+      <p>Für eine Frage den/die passenden Stoff(e) in eine Zahl übersetzen: „braucht" → <b>123</b>, „herstellt" → <b>45</b>, einzelne Frage → die eine Zahl.</p>
     </section>
 
     <section><h3>Nachbesprechung</h3><p>Was war eindeutig? Was war missverständlich? Welche Regel war ein Algorithmus?</p></section>
@@ -124,20 +129,31 @@ let ws=null,myRole=null;
 
 const wireColors=['rot','blau','gelb','grün'];
 const colorClass={rot:'red',blau:'blue',gelb:'yellow','grün':'green'};
-const animals=[
+const animalBank=[
+  {icon:'🐭',traits:'Fell, bringt lebende Junge zur Welt und säugt sie',klasse:'Säugetier'},
+  {icon:'🐘',traits:'Haut mit Borsten, bringt lebende Junge zur Welt und säugt sie',klasse:'Säugetier'},
+  {icon:'🦇',traits:'hat Fell, säugt seine Jungen – kann aber fliegen',klasse:'Säugetier'},
+  {icon:'🐬',traits:'lebt im Wasser, atmet mit der Lunge, säugt seine Jungen',klasse:'Säugetier'},
+  {icon:'🐳',traits:'lebt im Meer, atmet an der Oberfläche mit der Lunge, säugt seine Jungen',klasse:'Säugetier'},
+  {icon:'🐦',traits:'Federn, Schnabel, legt Eier',klasse:'Vogel'},
+  {icon:'🦆',traits:'Federn, Schnabel, Schwimmhäute, legt Eier',klasse:'Vogel'},
+  {icon:'🦅',traits:'Federn, Schnabel, legt Eier, gleichwarm',klasse:'Vogel'},
+  {icon:'🐧',traits:'hat Federn, legt Eier – kann nicht fliegen, schwimmt aber gut',klasse:'Vogel'},
   {icon:'🦎',traits:'trockene Haut mit Schuppen, legt Eier an Land, wechselwarm',klasse:'Reptil'},
   {icon:'🐢',traits:'Hornpanzer, trockene Schuppenhaut, legt Eier an Land, wechselwarm',klasse:'Reptil'},
   {icon:'🐍',traits:'trockene Schuppen, legt Eier, wechselwarm, kein Fell',klasse:'Reptil'},
   {icon:'🐸',traits:'feuchte, glatte Haut, lebt im Wasser und an Land, wechselwarm',klasse:'Amphibie'},
-  {icon:'🐭',traits:'Fell, bringt lebende Junge zur Welt und säugt sie',klasse:'Säugetier'},
-  {icon:'🦇',traits:'Fell, säugt seine Jungen, bringt lebende Junge zur Welt',klasse:'Säugetier'},
-  {icon:'🐬',traits:'gleichwarm, säugt seine Jungen, atmet mit Lunge',klasse:'Säugetier'},
-  {icon:'🐦',traits:'Federn, Schnabel, legt Eier',klasse:'Vogel'},
-  {icon:'🦆',traits:'Federn, Schnabel, legt Eier, gleichwarm',klasse:'Vogel'}
+  {icon:'🐟',traits:'lebt im Wasser, atmet mit Kiemen, hat Schuppen und Flossen, legt Laich',klasse:'Fisch'},
+  {icon:'🦈',traits:'lebt im Meer, atmet mit Kiemen, hat Flossen, wechselwarm',klasse:'Fisch'}
 ];
-const plantQuestions=[
-  {prompt:'Frage: Welche drei Stoffe BRAUCHT die Pflanze für die Fotosynthese? Gib den Code ein.',code:'123'},
-  {prompt:'Frage: Welche zwei Stoffe STELLT die Pflanze bei der Fotosynthese her? Gib den Code ein.',code:'45'}
+const plantBank=[
+  {prompt:'Welche drei Stoffe BRAUCHT die Pflanze für die Fotosynthese? Gib den Code ein.',code:'123'},
+  {prompt:'Welche zwei Stoffe STELLT die Pflanze bei der Fotosynthese HER? Gib den Code ein.',code:'45'},
+  {prompt:'Welchen Stoff nimmt die Pflanze über die Wurzeln aus dem Boden auf?',code:'1'},
+  {prompt:'Welches Gas nimmt die Pflanze aus der Luft auf?',code:'2'},
+  {prompt:'Was liefert die Energie für die Fotosynthese?',code:'3'},
+  {prompt:'Welchen Energiespeicher (Nährstoff) stellt die Pflanze her?',code:'4'},
+  {prompt:'Welches Gas gibt die Pflanze an die Luft ab?',code:'5'}
 ];
 const typeLabel={wire:'Modul: Schläuche',animal:'Modul: Tiergruppe',plant:'Modul: Pflanzen-Code'};
 
@@ -189,17 +205,22 @@ function showQr(r){let url=makeJoinUrl(r);id('qrBox').classList.remove('hidden')
 function hostGame(){let r=roomId();hideAll();id('hostScreen').classList.remove('hidden');id('roomCode').textContent='Raumcode: '+r;id('roomCode').classList.remove('hidden');showQr(r);myRole='host';connectRoom(r);msg('Raum bereit. iPhone scannt den QR-Code. Drücke Start.','success')}
 
 /* ---- Fragen erzeugen ---- */
-function makeQuestion(type){
-  if(type==='wire'){let n=Math.floor(100+Math.random()*900);return{type:'wire',serial:'PFL-'+n,answer:(n%2===0?'grün':'blau')}}
-  if(type==='animal'){let a=pick(animals);return{type:'animal',icon:a.icon,traits:a.traits,answer:a.klasse}}
-  let p=pick(plantQuestions);return{type:'plant',prompt:p.prompt,answer:p.code};
+function wireQ(n){return{type:'wire',serial:'PFL-'+n,answer:(n%2===0?'grün':'blau')}}
+let deck=[],deckPos=0;
+function buildDeck(){
+  // Ein gemischtes Deck aus eindeutigen Fragen; wird über alle Level verteilt,
+  // damit sich keine Frage wiederholt und jedes Level neue Fragen bekommt.
+  let d=[];
+  animalBank.forEach(a=>d.push({type:'animal',icon:a.icon,traits:a.traits,answer:a.klasse}));
+  plantBank.forEach(p=>d.push({type:'plant',prompt:p.prompt,answer:p.code}));
+  let serials=new Set();while(serials.size<10)serials.add(100+Math.floor(Math.random()*900));
+  serials.forEach(n=>d.push(wireQ(n)));
+  deck=d.sort(()=>Math.random()-0.5);deckPos=0;
 }
 function buildLevel(){
   let n=LEVELS[level-1];
-  let types=['wire','animal','plant'].sort(()=>Math.random()-0.5); // jede Sorte mind. einmal
-  while(types.length<n)types.push(pick(['wire','animal','plant']));
-  types=types.slice(0,n).sort(()=>Math.random()-0.5);
-  queue=types.map(makeQuestion);
+  while(deck.length<deckPos+n)deck.push(wireQ(100+Math.floor(Math.random()*900))); // Sicherheitsnetz
+  queue=deck.slice(deckPos,deckPos+n);deckPos+=n;
   qIndex=0;timeLeft=n*SECONDS_PER_Q;between=false;
 }
 
@@ -216,7 +237,7 @@ function startTimer(){
 function resetGame(){
   level=1;started=false;over=false;won=false;between=false;mistakes=0;
   clearInterval(interval);interval=null;id('startBtn').disabled=false;id('nextBtn').classList.add('hidden');
-  buildLevel();render();renderQuestion();msg('Neues Spiel bereit. Drücke Start.','');
+  buildDeck();buildLevel();render();renderQuestion();msg('Neues Spiel bereit. Drücke Start.','');
 }
 function end(win,text){over=true;won=win;between=false;started=false;clearInterval(interval);interval=null;id('nextBtn').classList.add('hidden');msg(text,win?'success':'fail');renderQuestion();render()}
 
@@ -249,7 +270,7 @@ function renderQuestion(){
   if(!started){box.innerHTML='<h2>Bereit?</h2><p>Drücke „Start". Dann erscheint hier die erste Aufgabe – beschreibe sie dem Forscher.</p>';return}
   let q=queue[qIndex];if(!q){box.innerHTML='';return}
   if(q.type==='wire'){box.innerHTML='<h2>🚰 Bewässerungs-Schlauch</h2><p>Nenne dem Forscher die <b>Seriennummer</b> und frage, welche Farbe geschlossen wird.</p><div class="serial">Seriennummer: '+q.serial+'</div>'+wiresHtml()}
-  else if(q.type==='animal'){box.innerHTML='<h2>🐾 Tiergruppe bestimmen</h2><p>Beschreibe dem Forscher die <b>Merkmale</b> und frage nach der Tiergruppe.</p><div class="bigicon">'+q.icon+'</div><p style="text-align:center"><b>Merkmale:</b> '+q.traits+'</p><button class="choice" onclick="answerAnimal(\'Amphibie\')">Amphibie</button><button class="choice" onclick="answerAnimal(\'Reptil\')">Reptil</button><button class="choice" onclick="answerAnimal(\'Säugetier\')">Säugetier</button><button class="choice" onclick="answerAnimal(\'Vogel\')">Vogel</button>'}
+  else if(q.type==='animal'){box.innerHTML='<h2>🐾 Tiergruppe bestimmen</h2><p>Beschreibe dem Forscher die <b>Merkmale</b> und frage nach der Tiergruppe.</p><div class="bigicon">'+q.icon+'</div><p style="text-align:center"><b>Merkmale:</b> '+q.traits+'</p><button class="choice" onclick="answerAnimal(\'Säugetier\')">Säugetier</button><button class="choice" onclick="answerAnimal(\'Vogel\')">Vogel</button><button class="choice" onclick="answerAnimal(\'Reptil\')">Reptil</button><button class="choice" onclick="answerAnimal(\'Amphibie\')">Amphibie</button><button class="choice" onclick="answerAnimal(\'Fisch\')">Fisch</button>'}
   else{box.innerHTML='<h2>🌱 Pflanzen-Code (Fotosynthese)</h2><p>'+q.prompt+'</p><p><span class="pill">Wasser</span> <span class="pill">Kohlenstoffdioxid</span> <span class="pill">Licht</span> <span class="pill">Zucker</span> <span class="pill">Sauerstoff</span></p><input id="plantCode" placeholder="Code eingeben (z. B. 123)" inputmode="numeric"><button onclick="answerPlant()">Code prüfen</button>'}
 }
 function render(){
@@ -263,7 +284,7 @@ function render(){
   broadcast();
 }
 
-buildLevel();render();renderQuestion();
+buildDeck();buildLevel();render();renderQuestion();
 (function(){let q=new URLSearchParams(location.search);if(q.get('manual')){hideAll();id('manual').classList.remove('hidden');let r=q.get('room');if(r){myRole='manual';r=r.toUpperCase();setNet('Verbinde mit '+r+' ...','');connectRoom(r)}else{myRole='manual';setNet('Kein Raumcode – Anleitung offline geöffnet.','warn')}}})();
 </script>
 </body>
