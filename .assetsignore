@@ -1,0 +1,9 @@
+node_modules
+party
+package.json
+package-lock.json
+partykit.json
+wrangler.toml
+.assetsignore
+.gitignore
+README.txt
