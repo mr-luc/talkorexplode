@@ -1,33 +1,28 @@
 Rette das Gewächshaus – Bio-Kooperationsspiel Klasse 5
 
 WICHTIG: Für das Live-Multiplayer muss die Seite über eine Web-Adresse (https)
-geöffnet werden – NICHT als Datei (file://). Als Datei blockieren iPad/iPhone das
-Nachladen der Verbindungs-Bibliothek, und der QR-Code zeigt auf einen lokalen
-Dateipfad, den das andere Gerät nicht öffnen kann.
+geöffnet werden – NICHT als Datei (file://). Als Datei gibt es keinen Server für
+die WebSocket-Verbindung, und der QR-Code zeigt auf einen lokalen Dateipfad, den
+das andere Gerät nicht öffnen kann.
 
-Das Live-Sync läuft über PartyKit (ein kleiner WebSocket-Server auf Cloudflare).
-Das funktioniert auch in strengen Schul-WLANs (kein WebRTC).
+Das Live-Sync läuft direkt im Cloudflare-Worker (über ein Durable Object).
+Das funktioniert auch in strengen Schul-WLANs (kein WebRTC) und braucht KEINEN
+zweiten Dienst: Seite und Sync werden zusammen als ein Worker deployt.
 
-Schritt A – Seite hosten (Cloudflare Pages, kostenlos):
-1. Cloudflare-Dashboard -> Workers & Pages -> Create -> Pages -> Connect to Git.
-2. Repo "talkorexplode" auswählen.
-3. Framework preset: None. Build command: leer. Build output directory: /
-4. Save and Deploy. Es entsteht eine URL wie https://talkorexplode.pages.dev
+Hosten (Cloudflare Workers, kostenlos, via Git):
+1. Cloudflare-Dashboard -> Workers & Pages -> Create -> Workers -> Connect to Git.
+2. Repo "talkorexplode" auswählen und verbinden.
+3. Cloudflare baut bei jedem Push automatisch (Deploy command: npx wrangler deploy).
+4. Es entsteht eine URL wie https://talkorexplode.DEIN-NAME.workers.dev
 
-Schritt B – PartyKit-Sync-Server einmalig veröffentlichen:
-Voraussetzung: Node.js auf dem Computer installiert.
-1. Repo lokal öffnen (Terminal im Projektordner).
-2. Einmalig:  npm install
-3. Veröffentlichen:  npm run deploy
-   (entspricht "npx partykit deploy"; beim ersten Mal mit GitHub anmelden).
-4. Am Ende zeigt die Konsole die Adresse, z.B.:
-      talkorexplode.DEIN-USERNAME.partykit.dev
-5. Diese Adresse in index.html oben eintragen:
-      const PARTYKIT_HOST='talkorexplode.DEIN-USERNAME.partykit.dev';
-   speichern, committen, pushen -> Cloudflare Pages deployt automatisch neu.
+Mehr ist nicht nötig: Es gibt keinen separaten Sync-Server, keinen Host-Eintrag
+und keinen Platzhalter mehr. Das iPhone verbindet sich automatisch zur selben
+Adresse, von der die Seite geladen wurde (Pfad /ws).
 
-Hinweis: Schritt B nur einmal nötig. Solange PARTYKIT_HOST noch "DEIN-USERNAME"
-enthält, zeigt das Spiel den Hinweis "PartyKit noch nicht eingerichtet".
+Optional lokal entwickeln/deployen (Node.js erforderlich):
+   npm install
+   npm run dev      (lokaler Test mit Worker + Durable Object)
+   npm run deploy   (manuelles Deploy via npx wrangler deploy)
 
 Spielablauf (beide Geräte öffnen die Cloudflare-Pages-Adresse, brauchen Internet):
 1. iPad wählt „Gewächshaus hosten“ und zeigt einen Raumcode + QR-Code.

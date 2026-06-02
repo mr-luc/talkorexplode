@@ -2,12 +2,12 @@
   "name": "talkorexplode",
   "version": "1.0.0",
   "private": true,
-  "description": "Bio-Kooperationsspiel Klasse 5 mit PartyKit-Live-Sync",
+  "description": "Bio-Kooperationsspiel Klasse 5 mit Live-Sync über Cloudflare Workers (Durable Objects)",
   "scripts": {
-    "dev": "partykit dev",
-    "deploy": "partykit deploy"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
-    "partykit": "0.0.115"
+    "wrangler": "^4.0.0"
   }
 }

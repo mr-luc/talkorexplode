@@ -1,8 +1,7 @@
 node_modules
-party
+src
 package.json
 package-lock.json
-partykit.json
 wrangler.jsonc
 .assetsignore
 .gitignore
