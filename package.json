@@ -1,0 +1,13 @@
+{
+  "name": "talkorexplode",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bio-Kooperationsspiel Klasse 5 mit PartyKit-Live-Sync",
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy"
+  },
+  "devDependencies": {
+    "partykit": "0.0.115"
+  }
+}

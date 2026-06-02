@@ -5,14 +5,31 @@ geöffnet werden – NICHT als Datei (file://). Als Datei blockieren iPad/iPhone
 Nachladen der Verbindungs-Bibliothek, und der QR-Code zeigt auf einen lokalen
 Dateipfad, den das andere Gerät nicht öffnen kann.
 
-Einmal einrichten – GitHub Pages (kostenlos):
-1. Auf GitHub: Repo "talkorexplode" -> Settings -> Pages.
-2. Bei "Build and deployment" -> Source: "Deploy from a branch".
-3. Branch "main", Ordner "/ (root)" wählen, Save.
-4. Nach ein paar Minuten ist die Seite erreichbar unter:
-   https://mr-luc.github.io/talkorexplode/
+Das Live-Sync läuft über PartyKit (ein kleiner WebSocket-Server auf Cloudflare).
+Das funktioniert auch in strengen Schul-WLANs (kein WebRTC).
 
-Spielablauf (beide Geräte öffnen die obige https-Adresse, brauchen Internet):
+Schritt A – Seite hosten (Cloudflare Pages, kostenlos):
+1. Cloudflare-Dashboard -> Workers & Pages -> Create -> Pages -> Connect to Git.
+2. Repo "talkorexplode" auswählen.
+3. Framework preset: None. Build command: leer. Build output directory: /
+4. Save and Deploy. Es entsteht eine URL wie https://talkorexplode.pages.dev
+
+Schritt B – PartyKit-Sync-Server einmalig veröffentlichen:
+Voraussetzung: Node.js auf dem Computer installiert.
+1. Repo lokal öffnen (Terminal im Projektordner).
+2. Einmalig:  npm install
+3. Veröffentlichen:  npm run deploy
+   (entspricht "npx partykit deploy"; beim ersten Mal mit GitHub anmelden).
+4. Am Ende zeigt die Konsole die Adresse, z.B.:
+      talkorexplode.DEIN-USERNAME.partykit.dev
+5. Diese Adresse in index.html oben eintragen:
+      const PARTYKIT_HOST='talkorexplode.DEIN-USERNAME.partykit.dev';
+   speichern, committen, pushen -> Cloudflare Pages deployt automatisch neu.
+
+Hinweis: Schritt B nur einmal nötig. Solange PARTYKIT_HOST noch "DEIN-USERNAME"
+enthält, zeigt das Spiel den Hinweis "PartyKit noch nicht eingerichtet".
+
+Spielablauf (beide Geräte öffnen die Cloudflare-Pages-Adresse, brauchen Internet):
 1. iPad wählt „Gewächshaus hosten“ und zeigt einen Raumcode + QR-Code.
 2. iPhone scannt den QR-Code (oder „Als Forscher beitreten“ + Raumcode eingeben).
 3. Das iPhone sieht die Anleitung und live Timer, gelöste Aufgaben und Fehler – aber NICHT das Gewächshaus.
