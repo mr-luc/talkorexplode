@@ -24,9 +24,10 @@ button{border:0;border-radius:16px;padding:13px 16px;margin:6px 6px 6px 0;backgr
     <h2>Spiel starten</h2>
     <p>Eine Person bedient am <b>iPad</b> die Gewächshaus-Konsole und sieht die Aufgaben. Die andere liest am <b>iPhone</b> die <b>Forscher-Anleitung</b> mit den Regeln. Ihr dürft euch nur durch <b>Sprechen</b> helfen.</p>
     <p class="small">Level 1 = 5 Fragen, Level 2 = 8, Level 3 = 12. Pro Level läuft ein eigener Timer.</p>
-    <button onclick="hostGame()">Gewächshaus hosten (iPad)</button>
+    <button onclick="hostGame()">2D-Gewächshaus hosten (iPad)</button>
+    <button class="blue" onclick="location.href='game-3d.html'">3D-Gewächshaus hosten (iPad)</button>
     <button class="secondary" onclick="showJoin()">Als Forscher beitreten (iPhone)</button>
-    <button class="blue" onclick="showManualOffline()">Anleitung offline öffnen</button>
+    <button class="secondary" onclick="showManualOffline()">Anleitung offline öffnen</button>
     <div id="joinBox" class="hidden"><input id="joinCode" placeholder="Raumcode BIO1234"><button onclick="joinGame()">Beitreten</button></div>
     <div id="netStatus" class="status">Online-Modus: Das iPhone scannt den QR-Code, liest die Regeln und sieht Level, Timer und Fortschritt live. Die konkrete Aufgabe sieht nur das iPad – darüber wird gesprochen.</div>
   </div>

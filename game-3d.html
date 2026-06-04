@@ -1,0 +1,257 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Talk or Explode – 3D-Gewächshaus</title><script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script><style>
+body{margin:0;overflow:hidden;background:#0b0f14;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none}
+#ui{position:fixed;left:12px;top:12px;z-index:5;background:#000a;border:1px solid #fff3;border-radius:16px;padding:12px;max-width:330px;backdrop-filter:blur(8px)}
+.room{font-weight:950;font-size:1.05rem;background:#0f281a;color:#c6ffcb;border-radius:12px;padding:8px 10px;text-align:center;letter-spacing:.06em}
+#qr{display:flex;justify-content:center;margin:8px 0}#qr img,#qr canvas{border-radius:8px}
+.status{margin:8px 0;font-weight:800;color:#cfeede;background:#ffffff12;border-radius:12px;padding:8px}
+.status.ok{color:#bff7c7}.status.bad{color:#ffc2c2}
+.task{margin-top:8px;font-size:.92rem;line-height:1.4;color:#eaf3ff;background:#10182088;border:1px solid #ffffff1a;border-radius:12px;padding:10px}
+.btn{border:0;border-radius:12px;padding:10px 12px;margin:4px 4px 0 0;background:#2fac55;color:#fff;font-weight:900;cursor:pointer}
+.btn.blue{background:#2368d8}.btn.grey{background:#5a6670}.btn:disabled{opacity:.45;cursor:default}
+.hidden{display:none!important}
+.hint{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:4;background:#0009;border:1px solid #fff2;border-radius:999px;padding:9px 14px;color:#d8ffe0;font-weight:800;font-size:.9rem}
+a.back{position:fixed;right:12px;top:12px;z-index:5;color:#cfe;text-decoration:none;background:#0008;border:1px solid #fff3;border-radius:999px;padding:8px 12px;font-weight:800}
+@media(max-width:760px){#ui{max-width:46vw}.hint{font-size:.78rem;width:calc(100% - 24px);text-align:center}}
+</style></head><body>
+<div id="ui">
+  <div id="room" class="room">Raum …</div>
+  <div id="qr"></div>
+  <div id="status" class="status">Raum wird vorbereitet …</div>
+  <div>
+    <button class="btn" id="startBtn" onclick="startGame()">Start</button>
+    <button class="btn blue hidden" id="nextBtn" onclick="nextLevel()">Weiter</button>
+    <button class="btn grey" onclick="resetGame()">Neu</button>
+  </div>
+  <div id="task" class="task">iPhone scannt den QR-Code (öffnet das Forscher-Handbuch). Dann „Start".</div>
+</div>
+<a class="back" href="play.html">‹ Auswahl</a>
+<div class="hint">Ziehen = drehen · Mausrad / zwei Finger = zoomen · Antippen = Modul bedienen</div>
+<script type="module">
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+/* ===================== Bio-Spiel-Daten (wie 2D-Spiel) ===================== */
+const LEVELS=[5,8,12], SECONDS_PER_Q=40, PENALTY=20;
+const colorHex={rot:0xd81b1b,blau:0x1e88e5,gelb:0xfdd835,'grün':0x43a047};
+const typeLabel={wire:'Modul: Schläuche',animal:'Modul: Tiergruppe',plant:'Modul: Pflanzen-Code'};
+const substances=['Wasser','CO₂','Licht','Zucker','O₂'];
+const animalBank=[
+ {icon:'🐭',traits:'Fell, bringt lebende Junge zur Welt und säugt sie',klasse:'Säugetier'},
+ {icon:'🐘',traits:'Haut mit Borsten, bringt lebende Junge zur Welt und säugt sie',klasse:'Säugetier'},
+ {icon:'🦇',traits:'hat Fell, säugt seine Jungen – kann aber fliegen',klasse:'Säugetier'},
+ {icon:'🐬',traits:'lebt im Wasser, atmet mit der Lunge, säugt seine Jungen',klasse:'Säugetier'},
+ {icon:'🐳',traits:'lebt im Meer, atmet an der Oberfläche mit der Lunge, säugt seine Jungen',klasse:'Säugetier'},
+ {icon:'🐦',traits:'Federn, Schnabel, legt Eier',klasse:'Vogel'},
+ {icon:'🦆',traits:'Federn, Schnabel, Schwimmhäute, legt Eier',klasse:'Vogel'},
+ {icon:'🦅',traits:'Federn, Schnabel, legt Eier, gleichwarm',klasse:'Vogel'},
+ {icon:'🐧',traits:'hat Federn, legt Eier – kann nicht fliegen, schwimmt aber gut',klasse:'Vogel'},
+ {icon:'🦎',traits:'trockene Haut mit Schuppen, legt Eier an Land, wechselwarm',klasse:'Reptil'},
+ {icon:'🐢',traits:'Hornpanzer, trockene Schuppenhaut, legt Eier an Land, wechselwarm',klasse:'Reptil'},
+ {icon:'🐍',traits:'trockene Schuppen, legt Eier, wechselwarm, kein Fell',klasse:'Reptil'},
+ {icon:'🐸',traits:'feuchte, glatte Haut, lebt im Wasser und an Land, wechselwarm',klasse:'Amphibie'},
+ {icon:'🐟',traits:'lebt im Wasser, atmet mit Kiemen, hat Schuppen und Flossen, legt Laich',klasse:'Fisch'},
+ {icon:'🦈',traits:'lebt im Meer, atmet mit Kiemen, hat Flossen, wechselwarm',klasse:'Fisch'}
+];
+const plantBank=[
+ {prompt:'Welche drei Stoffe BRAUCHT die Pflanze für die Fotosynthese? Gib den Code ein.',code:'123'},
+ {prompt:'Welche zwei Stoffe STELLT die Pflanze bei der Fotosynthese HER? Gib den Code ein.',code:'45'},
+ {prompt:'Welchen Stoff nimmt die Pflanze über die Wurzeln aus dem Boden auf?',code:'1'},
+ {prompt:'Welches Gas nimmt die Pflanze aus der Luft auf?',code:'2'},
+ {prompt:'Was liefert die Energie für die Fotosynthese?',code:'3'},
+ {prompt:'Welchen Energiespeicher (Nährstoff) stellt die Pflanze her?',code:'4'},
+ {prompt:'Welches Gas gibt die Pflanze an die Luft ab?',code:'5'}
+];
+const animalClasses=['Säugetier','Vogel','Reptil','Amphibie','Fisch'];
+
+/* ===================== Spielzustand ===================== */
+let level=1,timeLeft=LEVELS[0]*SECONDS_PER_Q,interval=null;
+let started=false,over=false,won=false,between=false,mistakes=0;
+let queue=[],qIndex=0,deck=[],deckPos=0,entered='';
+let ws=null;
+
+/* ===================== Three.js ===================== */
+let scene,camera,renderer,raycaster,mouse,group,objects=[],maxAniso=1,timerCa=null,timerMesh=null;
+let theta=0,phi=.86,radius=11,target=new THREE.Vector3(0,.3,.2);
+let down=false,lastX=0,lastY=0,drag=false,pointers=new Map(),pinch=0;
+
+init3D();buildDeck();buildLevel();hostGame();buildDevice();render();animate();
+
+function $(x){return document.getElementById(x)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function fmt(t){return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')}
+function status(t,c){let e=$('status');e.textContent=t;e.className='status '+(c||'')}
+function setTask(html){$('task').innerHTML=html}
+
+function init3D(){
+  scene=new THREE.Scene();scene.background=new THREE.Color(0x0b0f14);scene.fog=new THREE.Fog(0x0b0f14,22,52);
+  camera=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,120);
+  renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;renderer.outputColorSpace=THREE.SRGBColorSpace;maxAniso=renderer.capabilities.getMaxAnisotropy();
+  document.body.appendChild(renderer.domElement);
+  raycaster=new THREE.Raycaster();mouse=new THREE.Vector2();
+  scene.add(new THREE.HemisphereLight(0xe6eef7,0x2b3036,1.15));
+  scene.add(new THREE.AmbientLight(0xffffff,.32));
+  let key=new THREE.DirectionalLight(0xffffff,2.6);key.position.set(7,12,8);key.castShadow=true;
+  key.shadow.mapSize.set(2048,2048);key.shadow.camera.near=.5;key.shadow.camera.far=46;
+  key.shadow.camera.left=-12;key.shadow.camera.right=12;key.shadow.camera.top=12;key.shadow.camera.bottom=-12;key.shadow.bias=-.0004;
+  scene.add(key);
+  let fill=new THREE.DirectionalLight(0xd2dcff,1.0);fill.position.set(-8,6,-4);scene.add(fill);
+  let floor=new THREE.Mesh(new THREE.PlaneGeometry(60,40),new THREE.MeshStandardMaterial({color:0x10151b,roughness:.95}));
+  floor.rotation.x=-Math.PI/2;floor.position.y=-.84;floor.receiveShadow=true;scene.add(floor);
+  let grid=new THREE.GridHelper(48,48,0x32505f,0x1d2b33);grid.position.y=-.82;scene.add(grid);
+  addEventListener('resize',resize);
+  let c=renderer.domElement;
+  c.addEventListener('pointerdown',pd);c.addEventListener('pointermove',pm);c.addEventListener('pointerup',pu);c.addEventListener('pointercancel',pu);c.addEventListener('wheel',wh,{passive:false});
+  updateCamera();
+}
+function updateCamera(){phi=Math.max(.3,Math.min(1.4,phi));radius=Math.max(5,Math.min(17,radius));camera.position.set(target.x+radius*Math.sin(phi)*Math.sin(theta),target.y+radius*Math.cos(phi),target.z+radius*Math.sin(phi)*Math.cos(theta));camera.lookAt(target)}
+function pd(e){if(e.target!==renderer.domElement)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});renderer.domElement.setPointerCapture(e.pointerId);down=true;lastX=e.clientX;lastY=e.clientY;drag=false;if(pointers.size===2){let a=[...pointers.values()];pinch=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}}
+function pm(e){if(!pointers.has(e.pointerId))return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){let a=[...pointers.values()];let dist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(pinch){radius*=pinch/dist;updateCamera()}pinch=dist;drag=true;return}if(!down)return;let dx=e.clientX-lastX,dy=e.clientY-lastY;if(Math.abs(dx)+Math.abs(dy)>3)drag=true;theta-=dx*.007;phi-=dy*.006;lastX=e.clientX;lastY=e.clientY;updateCamera()}
+function pu(e){pointers.delete(e.pointerId);if(pointers.size<2)pinch=0;if(!drag)clickObj(e);down=pointers.size>0}
+function wh(e){e.preventDefault();radius*=e.deltaY>0?1.09:.91;updateCamera()}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);updateCamera()}
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}
+
+function mat(c,m=.25,r=.55){return new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m})}
+function box(w,h,d,c,m,r){return new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c,m,r))}
+function add(o,data={}){o.userData=data;if(o.isMesh&&!o.isLabel){o.castShadow=true;o.receiveShadow=true}objects.push(o);group.add(o);return o}
+function clearGroup(){if(group)scene.remove(group);group=new THREE.Group();scene.add(group);objects=[];timerMesh=null;timerCa=null}
+
+/* Flaches Schild (Text liegt auf der Fläche) */
+function flatLabel(txt,size,color,bg){
+  let ca=document.createElement('canvas');let ctx=ca.getContext('2d');let fs=150,pad=bg?40:20;
+  ctx.font='bold '+fs+'px system-ui';let w=Math.ceil(ctx.measureText(txt).width)+pad*2,h=fs+pad*2;ca.width=w;ca.height=h;
+  ctx.font='bold '+fs+'px system-ui';
+  if(bg){let r=Math.min(h*.3,48);ctx.beginPath();ctx.moveTo(8+r,8);ctx.arcTo(w-8,8,w-8,h-8,r);ctx.arcTo(w-8,h-8,8,h-8,r);ctx.arcTo(8,h-8,8,8,r);ctx.arcTo(8,8,w-8,8,r);ctx.closePath();ctx.fillStyle=bg;ctx.fill()}
+  ctx.fillStyle=color;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,w/2,h/2);
+  let tex=new THREE.CanvasTexture(ca);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=maxAniso;tex.minFilter=THREE.LinearMipmapLinearFilter;
+  let me=new THREE.Mesh(new THREE.PlaneGeometry(size*w/h,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+  me.rotation.x=-Math.PI/2;me.renderOrder=3;me.isLabel=true;me.ca=ca;return me;
+}
+function placeLabel(txt,size,x,z,color,bg){let l=flatLabel(txt,size,color||'#f4f6f8',bg);l.position.set(x,.515,z);add(l,{});return l}
+
+/* 7-Segment-Timer */
+function drawDigit(ctx,x,y,dw,dh,ch,onC,offC,t){const M={'0':[1,1,1,1,1,1,0],'1':[0,1,1,0,0,0,0],'2':[1,1,0,1,1,0,1],'3':[1,1,1,1,0,0,1],'4':[0,1,1,0,0,1,1],'5':[1,0,1,1,0,1,1],'6':[1,0,1,1,1,1,1],'7':[1,1,1,0,0,0,0],'8':[1,1,1,1,1,1,1],'9':[1,1,1,1,0,1,1]};const S=M[ch]||[0,0,0,0,0,0,0];const m=t*.85,h=dh/2;const seg=[[x+m,y+t/2,x+dw-m,y+t/2],[x+dw-t/2,y+m,x+dw-t/2,y+h-m*.3],[x+dw-t/2,y+h+m*.3,x+dw-t/2,y+dh-m],[x+m,y+dh-t/2,x+dw-m,y+dh-t/2],[x+t/2,y+h+m*.3,x+t/2,y+dh-m],[x+t/2,y+m,x+t/2,y+h-m*.3],[x+m,y+h,x+dw-m,y+h]];ctx.lineCap='round';ctx.lineWidth=t;for(let k=0;k<7;k++){let on=S[k];ctx.strokeStyle=on?onC:offC;ctx.shadowColor=onC;ctx.shadowBlur=on?16:0;ctx.beginPath();ctx.moveTo(seg[k][0],seg[k][1]);ctx.lineTo(seg[k][2],seg[k][3]);ctx.stroke()}ctx.shadowBlur=0}
+function draw7seg(ctx,str){const onC=timeLeft<=20&&started&&!over?'#ff2b2b':'#ff7a1a',offC='rgba(120,40,10,.28)',dw=82,dh=150,gap=12,colW=34,y=53;let x=50;for(const ch of str){if(ch===':'){ctx.fillStyle=onC;ctx.shadowColor=onC;ctx.shadowBlur=16;[y+dh*.34,y+dh*.66].forEach(cy=>{ctx.beginPath();ctx.arc(x+colW/2,cy,8,0,7);ctx.fill()});ctx.shadowBlur=0;x+=colW+gap}else{drawDigit(ctx,x,y,dw,dh,ch,onC,offC,Math.round(dw*.16));x+=dw+gap}}}
+function setTimerLabel(){if(!timerCa)return;let ctx=timerCa.getContext('2d');ctx.clearRect(0,0,timerCa.width,timerCa.height);draw7seg(ctx,fmt(timeLeft));if(timerMesh)timerMesh.material.map.needsUpdate=true}
+
+/* ===================== Gerät bauen ===================== */
+function buildDevice(){
+  clearGroup();
+  // Aluminium-Koffer
+  let base=box(9.2,1,5.6,0xcfd3d6,.62,.4);base.position.y=0;add(base,{kind:'case'});
+  let under=box(9.5,.22,5.9,0x8d9296,.6,.5);under.position.y=-.6;add(under,{kind:'case'});
+  [-2.75,2.75].forEach(z=>{let r=box(9.2,.18,.22,0x9aa1a6,.82,.38);r.position.set(0,.55,z);add(r,{kind:'frame'})});
+  [-4.5,4.5].forEach(x=>{let r=box(.22,.18,5.6,0x9aa1a6,.82,.38);r.position.set(x,.55,0);add(r,{kind:'frame'})});
+  // Timer-Display (oben links)
+  let th=box(2.5,.5,1.15,0x07090c,.3,.6);th.position.set(-3.1,.4,-1.75);add(th,{kind:'panel'});
+  timerCa=document.createElement('canvas');timerCa.width=512;timerCa.height=256;
+  let ttex=new THREE.CanvasTexture(timerCa);ttex.colorSpace=THREE.SRGBColorSpace;ttex.anisotropy=maxAniso;
+  timerMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.8,.9),new THREE.MeshBasicMaterial({map:ttex,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+  timerMesh.isLabel=true;timerMesh.rotation.x=-Math.PI/2;timerMesh.position.set(-3.1,.66,-1.7);add(timerMesh,{kind:'timer'});
+  setTimerLabel();
+  // HUD: Level / Frage / Fehler
+  placeLabel('LEVEL '+level+'/3',.34,-.35,-1.95,'#10181c','#dfe6e2');
+  placeLabel('FRAGE '+Math.min(qIndex+1,queue.length)+'/'+queue.length,.34,1.5,-1.95,'#10181c','#dfe6e2');
+  placeLabel('FEHLER '+mistakes,.34,3.3,-1.95,mistakes>0?'#fff':'#10181c',mistakes>0?'#b53030':'#dfe6e2');
+
+  if(over){ placeLabel(won?'🎉 GERETTET':'⛔ EXPLODIERT',.7,0,.4,won?'#bff7c7':'#ffb3b3','#0f1620'); setTask(won?'<b>Alle 3 Level geschafft!</b> Drücke „Neu" für eine neue Runde.':'<b>Zeit abgelaufen.</b> Besprecht, wo es hakte – dann „Neu".'); return; }
+  if(between){ placeLabel('LEVEL '+level+' ✓',.7,0,.4,'#bff7c7','#0f1620'); setTask('✅ Level '+level+' geschafft. Drücke „Weiter" für Level '+(level+1)+' ('+LEVELS[level]+' Fragen).'); return; }
+  if(!started){ placeLabel('BEREIT',.7,0,.4,'#cfe','#0f1620'); setTask('iPhone scannt den QR-Code (öffnet das Forscher-Handbuch). Dann „Start" drücken.'); return; }
+  let q=queue[qIndex]; if(!q)return;
+  if(q.type==='wire')wireModule(q); else if(q.type==='animal')animalModule(q); else plantModule(q);
+}
+
+function wireModule(q){
+  placeLabel('🚰 SCHLÄUCHE',.4,0,-.95,'#dff5e6','#123325');
+  placeLabel('Serie '+q.serial,.42,0,-.35,'#ffd23b','#121417');
+  let order=Object.keys(colorHex).sort(()=>Math.random()-.5);
+  order.forEach((c,i)=>{
+    let z=.35+i*.5;
+    let cyl=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,3.4,24),mat(colorHex[c],.1,.5));
+    cyl.rotation.z=Math.PI/2;cyl.position.set(0,.62,z);add(cyl,{act:'wire',color:c});
+    [-1.75,1.75].forEach(s=>{let p=box(.26,.2,.26,0x1c2025,.4,.6);p.position.set(s,.6,z);add(p,{kind:'clip'})});
+  });
+  setTask('<b>'+typeLabel.wire+'</b><br>Nenne dem Forscher die Seriennummer <b>'+q.serial+'</b> und frage, welche Farbe geschlossen werden muss. Dann den passenden Schlauch antippen.');
+}
+
+function animalModule(q){
+  placeLabel('🐾 TIERGRUPPE',.4,0,-1.55,'#dff5e6','#123325');
+  placeLabel(q.icon,1.4,0,-.35,'#fff');
+  animalClasses.forEach((k,i)=>{
+    let x=-3.2+i*1.6, z=1.45;
+    let b=box(1.45,.2,.95,0x2f7d4a,.25,.5);b.position.set(x,.6,z);add(b,{act:'animal',klasse:k});
+    let l=flatLabel(k,.2,'#ffffff');l.position.set(x,.71,z);add(l,{});
+  });
+  setTask('<b>'+typeLabel.animal+'</b><br>Beschreibe dem Forscher die Merkmale und frage nach der Tiergruppe:<br><i>'+q.traits+'</i>');
+}
+
+function plantModule(q){
+  placeLabel('🌱 PFLANZEN-CODE',.4,0,-1.65,'#dff5e6','#123325');
+  // Code-Anzeige
+  let disp=box(2.6,.5,.9,0x07090c,.3,.6);disp.position.set(0,.4,-.95);add(disp,{kind:'panel'});
+  placeLabel(entered||'– – –',.5,0,-.95,'#7af0a0','#06120a');
+  // Ziffern 1..5 mit Stoffnamen
+  for(let n=1;n<=5;n++){
+    let x=-3.2+(n-1)*1.6, z=.35;
+    let b=box(1.45,.2,.8,0x2368d8,.25,.5);b.position.set(x,.6,z);add(b,{act:'digit',d:String(n)});
+    let l=flatLabel(n+' '+substances[n-1],.17,'#ffffff');l.position.set(x,.71,z);add(l,{});
+  }
+  // C und OK
+  let cB=box(1.7,.2,.9,0x5a6670,.25,.5);cB.position.set(-1.4,.6,1.35);add(cB,{act:'clear'});
+  let cl=flatLabel('Löschen',.2,'#fff');cl.position.set(-1.4,.71,1.35);add(cl,{});
+  let okB=box(1.7,.2,.9,0x2fac55,.25,.5);okB.position.set(1.4,.6,1.35);add(okB,{act:'enter'});
+  let ol=flatLabel('Prüfen',.2,'#fff');ol.position.set(1.4,.71,1.35);add(ol,{});
+  setTask('<b>'+typeLabel.plant+'</b><br>'+q.prompt+'<br><span class="small">1 Wasser · 2 CO₂ · 3 Licht · 4 Zucker · 5 Sauerstoff</span>');
+}
+
+/* ===================== Klick / Antworten ===================== */
+function hit(e){mouse.x=e.clientX/innerWidth*2-1;mouse.y=-(e.clientY/innerHeight)*2+1;raycaster.setFromCamera(mouse,camera);let h=raycaster.intersectObjects(objects,false).find(x=>x.object.userData.act);return h&&h.object}
+function clickObj(e){let o=hit(e);if(!o)return;let d=o.userData;
+  if(d.act==='wire')answerWire(d.color);
+  else if(d.act==='animal')answerAnimal(d.klasse);
+  else if(d.act==='digit'){if(!guard())return;entered=(entered+d.d).slice(0,6);buildDevice()}
+  else if(d.act==='clear'){if(!guard())return;entered='';buildDevice()}
+  else if(d.act==='enter')answerPlant();
+}
+function guard(){return !(!started||over||between)}
+function answerWire(color){let q=queue[qIndex];if(!guard()||!q||q.type!=='wire')return;if(color===q.answer)solveStep('Richtig – '+color+' geschlossen.');else penalty('Falscher Schlauch! '+PENALTY+' s Abzug.')}
+function answerAnimal(k){let q=queue[qIndex];if(!guard()||!q||q.type!=='animal')return;if(k===q.answer)solveStep('Richtig – '+k+'.');else penalty('Falsche Tiergruppe! '+PENALTY+' s Abzug.')}
+function answerPlant(){let q=queue[qIndex];if(!guard()||!q||q.type!=='plant')return;if(entered===q.answer)solveStep('Richtig – Code '+entered+' stimmt.');else penalty('Falscher Code! '+PENALTY+' s Abzug.')}
+function solveStep(t){status(t,'ok');qIndex++;entered='';if(qIndex>=queue.length){render();levelDone()}else{buildDevice();render()}}
+function penalty(t){mistakes++;timeLeft=Math.max(0,timeLeft-PENALTY);entered='';status(t,'bad');buildDevice();render()}
+
+/* ===================== Ablauf (wie 2D) ===================== */
+function wireQ(n){return{type:'wire',serial:'PFL-'+n,answer:(n%2===0?'grün':'blau')}}
+function buildDeck(){let d=[];animalBank.forEach(a=>d.push({type:'animal',icon:a.icon,traits:a.traits,answer:a.klasse}));plantBank.forEach(p=>d.push({type:'plant',prompt:p.prompt,answer:p.code}));let s=new Set();while(s.size<10)s.add(100+Math.floor(Math.random()*900));s.forEach(n=>d.push(wireQ(n)));deck=d.sort(()=>Math.random()-.5);deckPos=0}
+function buildLevel(){let n=LEVELS[level-1];while(deck.length<deckPos+n)deck.push(wireQ(100+Math.floor(Math.random()*900)));queue=deck.slice(deckPos,deckPos+n);deckPos+=n;qIndex=0;timeLeft=n*SECONDS_PER_Q;between=false;entered=''}
+function startGame(){if(started||over)return;started=true;$('startBtn').disabled=true;startTimer();buildDevice();render();status('Level 1 läuft – löst die Aufgaben gemeinsam.','ok')}
+function startTimer(){clearInterval(interval);interval=setInterval(()=>{timeLeft--;render();if(timeLeft<=0)end(false,'Zeit abgelaufen.')},1000)}
+function resetGame(){level=1;started=false;over=false;won=false;between=false;mistakes=0;entered='';clearInterval(interval);interval=null;$('startBtn').disabled=false;$('nextBtn').classList.add('hidden');buildDeck();buildLevel();buildDevice();render();status('Neues Spiel bereit. Drücke Start.')}
+function end(win,t){over=true;won=win;between=false;started=false;clearInterval(interval);interval=null;$('nextBtn').classList.add('hidden');status((win?'🎉 ':'⛔ ')+t,win?'ok':'bad');buildDevice();render()}
+function levelDone(){if(level>=LEVELS.length){end(true,'Alle 3 Level geschafft – Gewächshaus gerettet!');return}between=true;clearInterval(interval);interval=null;$('nextBtn').classList.remove('hidden');status('Level '+level+' geschafft! „Weiter" für Level '+(level+1)+'.','ok');buildDevice();render()}
+function nextLevel(){if(!between)return;level++;between=false;$('nextBtn').classList.add('hidden');buildLevel();startTimer();buildDevice();render();status('Level '+level+' läuft – '+LEVELS[level-1]+' Fragen.','ok')}
+function render(){setTimerLabel();broadcast()}
+
+/* ===================== Live-Sync zum iPhone-Handbuch ===================== */
+function roomId(){return 'BIO'+Math.floor(1000+Math.random()*9000)}
+function makeJoinUrl(r){let u=new URL('index.html',location.href);u.searchParams.set('manual','1');u.searchParams.set('room',r);return u.toString()}
+function showQr(r){let url=makeJoinUrl(r);$('room').textContent='Raumcode: '+r;$('qr').innerHTML='';if(window.QRCode){new QRCode($('qr'),{text:url,width:150,height:150})}else{$('qr').textContent='Kein Internet – Raumcode mündlich teilen.'}}
+function hostGame(){let r=roomId();showQr(r);connectRoom(r)}
+function connectRoom(code){
+  if(location.protocol==='file:'){status('Als Datei geöffnet – bitte über die https-Adresse öffnen (für iPhone-Sync).','bad');return}
+  try{
+    const proto=location.protocol==='https:'?'wss':'ws';
+    ws=new WebSocket(proto+'://'+location.host+'/ws?room='+encodeURIComponent(code));
+    ws.addEventListener('open',()=>status('Online. Warte auf iPhone …'));
+    ws.addEventListener('message',ev=>{let d;try{d=JSON.parse(ev.data)}catch(e){return}if(d.hello){status('iPhone verbunden ✓','ok');broadcast()}});
+    ws.addEventListener('close',()=>status('Verbindung getrennt – Seite neu laden.','bad'));
+    ws.addEventListener('error',()=>status('Verbindungsfehler – Internet/Adresse prüfen.','bad'));
+  }catch(e){status('Keine Online-Verbindung – Raumcode mündlich teilen.','bad')}
+}
+function snapshot(){let q=queue[qIndex];return{t:timeLeft,lvl:level,qi:Math.min(qIndex+1,queue.length),qn:queue.length,m:mistakes,qtype:(between||over||!started)?'':(q?q.type:''),started:started,over:over,win:won,ld:between}}
+function broadcast(){if(ws&&ws.readyState===1){try{ws.send(JSON.stringify(snapshot()))}catch(e){}}}
+
+window.startGame=startGame;window.nextLevel=nextLevel;window.resetGame=resetGame;
+</script>
+</body></html>
