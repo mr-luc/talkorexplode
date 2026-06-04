@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Talk or Explode – 3D Prototyp</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050505;font-family:Impact,Haettenschweiler,'Arial Narrow Bold',system-ui,sans-serif;color:#fff}body:before{content:"";position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(circle at 50% 42%,transparent 0 34%,rgba(0,0,0,.12) 48%,rgba(0,0,0,.72) 100%),linear-gradient(90deg,rgba(255,0,0,.08),transparent 18%,transparent 82%,rgba(255,0,0,.08));mix-blend-mode:multiply}.frame{position:fixed;inset:0;width:100%;height:100%;border:0}.topTitle{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:10;text-align:center;pointer-events:none;text-transform:uppercase;letter-spacing:.08em;text-shadow:0 4px 18px #000}.topTitle .kicker{display:inline-block;background:#b70000;color:#fff;padding:3px 9px;border-radius:2px;font-size:.72rem;font-family:system-ui,sans-serif;font-weight:900;letter-spacing:.14em}.topTitle h1{margin:4px 0 0;font-size:clamp(1.5rem,4vw,3.2rem);line-height:.9;color:#f5f0df}.topTitle p{margin:4px 0 0;font-family:system-ui,sans-serif;font-weight:800;font-size:.82rem;color:#d8d1bd}.scanlines{position:fixed;inset:0;z-index:9;pointer-events:none;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.035) 0 1px,transparent 1px 4px);opacity:.16}.corner{position:fixed;z-index:11;width:34px;height:34px;border-color:#d9c98c;pointer-events:none}.c1{left:12px;top:12px;border-left:3px solid;border-top:3px solid}.c2{right:12px;top:12px;border-right:3px solid;border-top:3px solid}.c3{left:12px;bottom:12px;border-left:3px solid;border-bottom:3px solid}.c4{right:12px;bottom:12px;border-right:3px solid;border-bottom:3px solid}.loading{position:fixed;inset:0;display:grid;place-items:center;background:#050505;z-index:20;text-align:center}.loading h2{font-size:2rem;text-transform:uppercase;letter-spacing:.08em;color:#f3ead2}.loading span{display:inline-block;margin-top:8px;font-family:system-ui,sans-serif;color:#a9a08a;font-weight:800}@media(max-width:800px){.topTitle{top:auto;bottom:56px}.topTitle h1{font-size:1.55rem}.topTitle p{display:none}}
+</style>
+</head>
+<body>
+<div class="loading" id="loading"><div><h2>Mission wird geladen</h2><span>3D-Unterrichtsmodus</span></div></div>
+<iframe id="game" class="frame" src="game-3d.html"></iframe>
+<div class="topTitle"><span class="kicker">Classroom Prototype</span><h1>Talk or Explode</h1><p>Allein am Gerät. Die anderen haben das Handbuch.</p></div>
+<div class="scanlines"></div><div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+<script>
+const frame=document.getElementById('game');
+frame.addEventListener('load',()=>{
+  document.getElementById('loading').style.display='none';
+  try{
+    const d=frame.contentDocument;
+    const css=`
+      body{background:#050505!important;font-family:system-ui,-apple-system,Segoe UI,sans-serif!important}
+      #ui{background:linear-gradient(180deg,rgba(17,17,17,.96),rgba(0,0,0,.92))!important;border:2px solid #d1c08a!important;border-left:8px solid #b70000!important;border-radius:4px!important;box-shadow:0 24px 70px #000,0 0 0 1px rgba(255,255,255,.08) inset!important;max-width:360px!important;padding:14px!important;text-transform:none!important}
+      #ui:before{content:'MISSION CONTROL';display:block;font-weight:1000;letter-spacing:.14em;color:#f4ead0;background:#b70000;margin:-14px -14px 10px -14px;padding:7px 10px;font-size:.78rem;text-align:center}
+      .room{background:#0b0b0b!important;color:#f2e6bd!important;border:1px solid #d1c08a!important;border-radius:2px!important;font-family:ui-monospace,Menlo,monospace!important;text-transform:uppercase!important;box-shadow:inset 0 0 12px rgba(255,0,0,.25)!important}
+      #qr{background:#f2ead9!important;border:3px solid #111!important;border-radius:2px!important;padding:8px!important;margin:10px auto!important;width:max-content!important;box-shadow:0 10px 25px #0008!important}
+      .status{background:#141414!important;border:1px solid #4f4a3a!important;border-radius:2px!important;color:#f2ead0!important;font-weight:900!important}
+      .status.ok{color:#b7ffba!important;border-color:#3d8c4f!important}.status.bad{color:#ffb4a8!important;border-color:#9a3028!important}
+      .task{background:#0a0a0a!important;border:1px solid #4f4a3a!important;border-radius:2px!important;color:#f0eadc!important;font-weight:700!important;box-shadow:inset 0 0 20px rgba(0,0,0,.75)!important}
+      .btn{border-radius:2px!important;background:#2b2b2b!important;border:1px solid #d1c08a!important;color:#f4ead0!important;text-transform:uppercase!important;letter-spacing:.04em!important;box-shadow:0 5px 0 #000!important}
+      .btn:hover{filter:brightness(1.15)!important}.btn.blue{background:#173d5c!important}.btn.grey{background:#4b4b4b!important}.btn:disabled{opacity:.35!important}
+      .hint{background:#060606dd!important;border:1px solid #d1c08a!important;border-radius:2px!important;color:#f4ead0!important;text-transform:uppercase!important;letter-spacing:.05em!important;font-size:.78rem!important}
+      a.back{background:#0b0b0bcc!important;border:1px solid #d1c08a!important;border-radius:2px!important;color:#f4ead0!important;text-transform:uppercase!important}
+      #banner{font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif!important;text-transform:uppercase!important;color:#f4ead0!important;letter-spacing:.05em!important}
+      canvas{filter:contrast(1.12) saturate(.85) brightness(.92)!important}
+      @media(max-width:760px){#ui{max-width:52vw!important}.hint{bottom:8px!important}}
+    `;
+    const style=d.createElement('style');style.textContent=css;d.head.appendChild(style);
+  }catch(e){console.warn('Styling konnte nicht injiziert werden',e)}
+});
+</script>
+</body>
+</html>
