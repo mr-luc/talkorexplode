@@ -51,15 +51,15 @@ function screw(x,y,z){let s=new THREE.Mesh(new THREE.CylinderGeometry(.07,.085,.
 function statusLed(x,y,z,name){let g=new THREE.Mesh(new THREE.BoxGeometry(.2,.1,.2),new THREE.MeshStandardMaterial({color:0x202a22,emissive:0x05140a,roughness:.4,metalness:.2}));g.position.set(x,y,z);add(g,{led:name});return g}
 function build(){
   clear();
-  let base=box(8.0,1,5.2,0x3b424a,.7,.45);base.position.y=0;add(base,{kind:'case'});
-  let under=box(8.3,.22,5.5,0x0e1318,.5,.6);under.position.y=-.6;add(under,{kind:'case'});
+  let base=box(8.0,1,5.2,0xcfd3d6,.62,.4);base.position.y=0;add(base,{kind:'case'});
+  let under=box(8.3,.22,5.5,0x8d9296,.6,.5);under.position.y=-.6;add(under,{kind:'case'});
   let backing=box(7.6,.08,4.8,0x0c1015,.2,.6);backing.position.y=.52;add(backing,{kind:'case'});
-  [-2.45,2.45].forEach(z=>{let r=box(8.0,.18,.22,0x2a3037,.8,.4);r.position.set(0,.55,z);add(r,{kind:'frame'})});
-  [-3.9,3.9].forEach(x=>{let r=box(.22,.18,5.2,0x2a3037,.8,.4);r.position.set(x,.55,0);add(r,{kind:'frame'})});
-  [[-3.9,-2.45],[3.9,-2.45],[-3.9,2.45],[3.9,2.45]].forEach(p=>{let c=box(.5,.34,.5,0x343b42,.9,.3);c.position.set(p[0],.6,p[1]);add(c,{kind:'frame'})});
-  let h1=box(.22,.5,.22,0x14181d,.7,.4);h1.position.set(-1.4,.8,2.45);add(h1,{kind:'case'});
-  let h2=box(.22,.5,.22,0x14181d,.7,.4);h2.position.set(1.4,.8,2.45);add(h2,{kind:'case'});
-  let hb=box(3.1,.22,.22,0x1a1f25,.8,.4);hb.position.set(0,1.05,2.45);add(hb,{kind:'case'});
+  [-2.45,2.45].forEach(z=>{let r=box(8.0,.18,.22,0x9aa1a6,.82,.38);r.position.set(0,.55,z);add(r,{kind:'frame'})});
+  [-3.9,3.9].forEach(x=>{let r=box(.22,.18,5.2,0x9aa1a6,.82,.38);r.position.set(x,.55,0);add(r,{kind:'frame'})});
+  [[-3.9,-2.45],[3.9,-2.45],[-3.9,2.45],[3.9,2.45]].forEach(p=>{let c=box(.5,.34,.5,0xaeb4b8,.85,.34);c.position.set(p[0],.6,p[1]);add(c,{kind:'frame'})});
+  let h1=box(.22,.5,.22,0xb4b9bc,.8,.35);h1.position.set(-1.4,.8,2.45);add(h1,{kind:'case'});
+  let h2=box(.22,.5,.22,0xb4b9bc,.8,.35);h2.position.set(1.4,.8,2.45);add(h2,{kind:'case'});
+  let hb=box(3.1,.22,.22,0xc2c7ca,.82,.32);hb.position.set(0,1.05,2.45);add(hb,{kind:'case'});
   let th=box(2.4,.55,1.15,0x07090c,.3,.6);th.position.set(-2.15,.42,-1.4);add(th,{kind:'panel'});
   let screen=box(2.0,.05,.78,0x0a0d11,0,.3);screen.position.set(-2.15,.7,-1.4);add(screen,{kind:'panel'});
   let tca=document.createElement('canvas');tca.width=512;tca.height=256;let ttex=new THREE.CanvasTexture(tca);ttex.colorSpace=THREE.SRGBColorSpace;ttex.anisotropy=maxAniso;let tl=new THREE.Sprite(new THREE.SpriteMaterial({map:ttex,transparent:true}));tl.scale.set(1.9,.95,1);tl.position.set(-2.15,.95,-1.42);tl.ca=tca;add(tl,{kind:'timer'});timerSprite=tl;drawTimer(tca);
