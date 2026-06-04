@@ -109,6 +109,7 @@ function valves(x,y,z){
     let kx=x+(i%2-.5)*.88,kz=z+(Math.floor(i/2)-.5)*.72;
     let k=new THREE.Mesh(new THREE.CylinderGeometry(.26,.26,.22,40),mat(0x28323a,.4,.45));k.rotation.x=Math.PI/2;k.position.set(kx,y+.3,kz);add(k,{module:'valves',value:v,on:false,zone});
     let bar=box(.46,.07,.12,0x10141a,.4,.5);bar.position.set(kx,y+.44,kz);add(bar,{kind:'handle'});
+    let nl=label(v,.19,'#f4f6f8','#15181c');nl.position.set(kx,y+.56,kz);add(nl,{});
   });
   let l=label('ZONE '+zone,.54,'#f4f6f8','#15181c');l.position.set(x,y+.5,z-1.05);add(l,{});
 }
