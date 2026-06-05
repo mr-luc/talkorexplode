@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BioLab 3D</title>
+  <link rel="stylesheet" href="./biolab-ui.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="stage"></div>
+  <div id="banner" class="banner"></div>
+  <div class="title"><h1>BioLab <span>3D</span></h1><p>Modularer Rätselkoffer für den Unterricht</p></div>
+  <div class="help"><div>Ziehen = drehen</div><div>Pinch = zoomen</div><div>Doppeltipp = Fokus</div><div>Antippen = Modul prüfen</div></div>
+  <div class="side">
+    <div class="card"><h2>Teamkommunikation</h2><div class="step"><b>1 QR-Code scannen</b><br>Das zweite Gerät öffnet das Handbuch.</div><div class="step"><b>2 Bio-Module beschreiben</b><br>Bewässerung, Gewächshaus, Nährstoffe, Tank und Tiere.</div><div class="step"><b>3 Gemeinsam lösen</b><br>Beschreiben, zuhören, entscheiden.</div><div id="qr"></div><div class="room">BIO-9Z7F</div></div>
+    <div class="card"><h2>Verbindung</h2><div class="status">Verbunden</div><p>2 Geräte online</p></div>
+    <div class="card"><div class="stats"><div><div class="lab">Level</div><div class="val"><span id="level">1</span>/3</div></div><div><div class="lab">Punkte</div><div class="val" id="score">0</div></div></div></div>
+    <div class="card"><h2>Module</h2><p>6 BioLab-Assets im 2×3-Raster.</p></div>
+  </div>
+  <div class="controls"><button class="btn" onclick="resetView()">Ansicht</button><button class="btn" onclick="startGame()">Start</button><button class="btn" onclick="newGame()">Neu</button></div>
+  <div class="tabs"><button class="tab active" onclick="focusMod('watering')">1 Bewässerung</button><button class="tab" onclick="focusMod('greenhouse')">2 Gewächshaus</button><button class="tab" onclick="focusMod('growth')">3 Wachstum</button><button class="tab" onclick="focusMod('nutrients')">4 Nährstoffe</button><button class="tab" onclick="focusMod('tank')">5 Tank</button><button class="tab" onclick="focusMod('animal')">6 Tiere</button></div>
+  <script type="module" src="./biolab-scene.js"></script>
+</body>
+</html>
